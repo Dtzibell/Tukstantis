@@ -268,7 +268,7 @@ while True:
         for player in player_dict.values():
             player[0].draw(screen)
             player[1].draw(screen)
-        player_dict[player_name][2].draw(screen, "black")
+        player_dict[winner_name][2].draw(screen, "black")
 
     # draw all elements and update screen
     pygame.display.update()
