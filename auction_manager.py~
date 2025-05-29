@@ -28,29 +28,29 @@ def manage_auction(turn: int, player_index: int, raise_button: Button, pass_butt
     if end_auction:
         return turn, end_auction
 
-    players[player_index].bet = players[player_index].bet
+    player_bet = players[player_index].bet
         
     # if own turn
     if turn == player_index and players[player_index].bet.value != 0:
         # if raising
         if raise_button.pressed:
             bets_values = [players[player_index].bet.value for player_index in range(3)]
-            players[player_index].bet.value = max(bets_values) + 10
-            print(players[player_index].bet.value)
+            player_bet.value = max(bets_values) + 10
+            print(player_bet.value)
             turn += 1 # INTEGERS ARE IMMUTABLE!
             raise_button.pressed = False
         
         #if passing
         elif pass_button.pressed:
-            players[player_index].bet.value = 0
+            player_bet.value = 0
             turn += 1
             pass_button.pressed = False
 
     # if already passed, skips the turn
-    elif players[player_index].bet.value == 0:
+    elif player_bet.value == 0:
         turn += 1
     
     if turn == 3:
         turn = 0
     
-    return turn, end_auction
+    return player_bet, turn, end_auction

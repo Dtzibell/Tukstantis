@@ -54,7 +54,7 @@ class PlayerHand(pygame.sprite.LayeredUpdates):
             card.adjust_position_based_on_mouse_pos()
             
 
-    def move_to_collected_cards_on_click(self, mouse1_state: bool, player):
+    def move_to_collected_cards_on_click(self, mouse1_state: bool):
         for card in self.sprites():
             moved = card.move_to_collected_cards(mouse1_state)
             if moved:

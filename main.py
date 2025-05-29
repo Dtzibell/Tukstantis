@@ -2,31 +2,29 @@ import pygame
 from sys import exit
 from pathlib import Path
 import random
-from game_initiation import initialize_cards, generate_player_hands, generate_player_bets, generate_card_backs
+from game_initiation import initialize_cards, generate_card_backs, generate_players
 from ButtonText import Button
 from auction_manager import manage_auction
 from socket_manager.server import run_server
-import time
-
-# random.seed(0)
 
 sock, socket_purpose = run_server()
-if socket_purpose == "server":
+if socket_purpose == "host":
     # seed = random.randint(0, 2**200)
     seed = 1
     for client in sock.clients:
         sock.socket.sendto(seed.to_bytes(25), (client[0], client[1]))
     random.seed(seed)
-elif socket_purpose == "connect":
+elif socket_purpose == "client":
     msg, sender = sock.socket.recvfrom(1024)
     seed = int.from_bytes(msg)
     random.seed(seed)
+player_index = sock.player_no
 
 # initialize cards
-path_to_cards = Path("PNG-cards-1.3")
+path_to_card_pngs = Path("card_pngs")
 card_height = 200 # used to maintain card scale
 card_width = card_height * 0.636 # 0.636 is the ratio between width and height
-all_cards: list = initialize_cards(path_to_cards, card_width, card_height)
+all_cards: list = initialize_cards(path_to_card_pngs, card_width, card_height)
 
 # initialize display
 pygame.init()
@@ -36,21 +34,19 @@ pygame.display.set_caption("Tūkstantis")
 clock = pygame.time.Clock()
 
 # initalize player hands
-path_to_card_back = path_to_cards / "back_of_card.png"
-player_dict, center_hand = generate_player_hands(all_cards, path_to_card_back, 
-                                                sock.player_no, card_width, card_height)
+path_to_card_back = path_to_card_pngs / "back_of_card.png"
+players, center_cards = generate_players(all_cards, path_to_card_back, 
+                                player_index, card_width, card_height)
+player_hand = players[player_index].hand
+player_collected_cards = players[player_index].collected
+player_bet = players[player_index].bet
 
 # initialize game state
 phase = "auction"
 raise_button = Button((1000, 675), (200, 50), "Raise")
 pass_button = Button((1000, 750), (200, 50), "Pass")
 show_button = Button((640,750), (200, 50), "Show cards")
-player_name = f"player{sock.player_no}"
-for player in player_dict.values():
-    player[0].set_unmovable()
 show_show_button = True
-player_dict = generate_player_bets(player_dict)
-mouse1_state = False
 turn = random.randint(0,2)
 
 while True:
@@ -66,18 +62,15 @@ while True:
         mouse1_state = False
     
     pygame.event.clear()
-
     screen.fill("grey")
-    player_hand = player_dict[player_name][0]
-
 
     if phase == "auction":
         # update cards
         
         player_hand.edit_masks()
-        player_hand.update_auction()
-        for player in player_dict.values():
-            player[0].draw(screen)
+        player_hand.adjust_position_based_on_mouse_pos()
+        for player in players:
+            player.hand.draw(screen)
 
         if show_show_button:
             show_button.draw(screen, mouse1_state)
@@ -88,30 +81,29 @@ while True:
                 player_hand.add_cards(player_hand.cards)
                 player_hand.set_movable()
 
-        center_hand.draw(screen)
+        center_cards.draw(screen)
         # update current bet
-        for player in player_dict.values():
-            player[2].draw(screen, "black")
+        for player in players: 
+            player.bet.draw(screen, "black")
         
-        if turn == sock.player_no:
+        if turn == player_index:
             # update game state
             raise_button.draw(screen, mouse1_state)
             pass_button.draw(screen, mouse1_state)
-            turn, end_auction = manage_auction(turn, player_name, raise_button,
-                                               pass_button, player_dict)
-            to_transfer = [player_name, str(player_dict[player_name][2].value), str(turn), str(end_auction)]
-            to_transfer:str = ":".join(to_transfer)
-            to_transfer = to_transfer.encode()
+            turn, end_auction = manage_auction(turn, player_index, raise_button,
+                                               pass_button, players)
+            to_transfer = [str(player_index), str(player_bet.value), str(turn), str(end_auction)]
+            to_transfer = sock.convert_list_to_bytes(to_transfer)
             for client in sock.clients:
                 sock.socket.sendto(to_transfer, client)
         
         else:
             try:
                 auction_info, server = sock.socket.recvfrom(1024)
-                auction_info = auction_info.decode().split(":")
-                player_dict[auction_info[0]][2].value = int(auction_info[1])
-                turn = int(auction_info[2])
-                end_auction = int(auction_info[3])
+                auction_info = sock.convert_bytes_to_list(auction_info)
+                players[auction_info[0]].bet.value = auction_info[1]
+                turn = auction_info[2]
+                end_auction = auction_info[3]
             except IndexError:
                 print("packet lost")
                 pass
@@ -122,19 +114,22 @@ while True:
         phase = "card sort"
         
         # find out the index of the winner
-        for key, values in player_dict.items(): # player is list [PlayerHand, CollectedHand, Bet]
+        for player in players: # player is list [PlayerHand, CollectedHand, Bet]
             # checks if players bet is 0
-            if values[2].value != 0: # if Bet is not 0
-                winner_name = key # winner is the player whose bet is not 0
-                winner_hand = player_dict[winner_name][0]
+            if player.bet.value != 0: # if Bet is not 0
+                winner = player # winner is the player whose bet is not 0
+                winner_hand = winner.hand
                 winner_cards = winner_hand.cards
-                if winner_name == player_name:
+                winner_collected = winner.collected
+                winner_bet = winner.bet
+                if winner == players[player_index]:
                     confirm_button = Button((1000,750), (200,50), "Confirm")
-                    center_cards = center_hand.cards
-                    center_hand.empty()
+                    center_cards_ = center_cards.cards
+                    center_cards.empty()
                     winner_hand.empty()
-                    new_winner_cards = winner_cards + center_cards
+                    new_winner_cards = winner_cards + center_cards_
                     winner_hand.add_cards(new_winner_cards)
+                    winner_hand.set_movable()
                 else:
                     # adds ten card backs to winner's hand
                     new_card_backs = generate_card_backs(path_to_card_back, 10, card_width, card_height)
@@ -150,56 +145,53 @@ while True:
     if phase == "card sort":
         
         # draw hands
-        if winner_name == player_name:
+        if winner == players[player_index]:
             player_hand.edit_masks()
-            player_hand.update_card_sort(mouse1_state, player_dict[player_name][1])
+            player_hand.adjust_position_based_on_mouse_pos()
+            moved = player_hand.move_to_collected_cards_on_click(mouse1_state, winner)
             confirm_button.draw(screen, mouse1_state)
             raise_button.draw(screen, mouse1_state)
-            player_bet = player_dict[player_name][2]
-            player_collected_hand = player_dict[player_name][1]
             if raise_button.pressed:
                 player_bet.value += 10
             player_bet.draw(screen, "black")
-            if confirm_button.pressed and len(player_collected_hand.sprites()) == 3:
+            if confirm_button.pressed and len(player_collected_cards.sprites()) == 3:
                 phase = "fight"
-            to_transfer = [phase, str(len(player_collected_hand.sprites()))]
-            to_transfer = ":".join(to_transfer)
+            to_transfer = [phase, str(len(player_collected_cards.sprites()))]
+            to_transfer = sock.convert_list_to_bytes(to_transfer)
             for client in sock.clients:
-                sock.socket.sendto(to_transfer.encode(), client)
+                sock.socket.sendto(to_transfer, client)
         else:
             card_sort_info, sender = sock.socket.recvfrom(1024)
-            card_sort_info = card_sort_info.decode().split(":")
+            card_sort_info = sock.convert_bytes_to_list(card_sort_info)
             player_hand.edit_masks()
             # update auction is meant to disallow clicking on the cards
-            player_hand.update_auction()
-            winner_collected_hand = player_dict[winner_name][1]
+            player_hand.adjust_position_based_on_mouse_pos()
             phase = card_sort_info[0]
             new_collected_hand_len = int(card_sort_info[1])
-            diff_lens = len(winner_collected_hand.sprites()) - new_collected_hand_len
+            diff_lens = len(winner_collected.sprites()) - new_collected_hand_len
             if diff_lens != 0:
                 collected_backs = generate_card_backs(path_to_card_back, new_collected_hand_len, card_width, card_height)
                 player_backs = generate_card_backs(path_to_card_back, 10 - new_collected_hand_len, card_width, card_height)
-                winner_collected_hand.empty()
-                winner_collected_hand.add_cards(collected_backs)
+                winner_collected.empty()
+                winner_collected.add_cards(collected_backs)
                 winner_hand.empty()
                 winner_hand.add_cards(player_backs)
 
-        for player in player_dict.values():
-            player[0].draw(screen)
+        for player in players:
+            player.hand.draw(screen)
         
         # update card collection
-        for player in player_dict.values():
-            player[1].update(mouse1_state, player_dict[player_name])
-            player[1].draw(screen)
+        for player in players:
+            player.collected.update(mouse1_state, player)
+            player.collected.draw(screen)
         
     if phase == "fight":
-        player_dict[player_name][0].edit_masks()
-        player_dict[player_name][0].update_auction()
-        player_dict[player_name][1].update(mouse1_state, player_dict)
-        for player in player_dict.values():
-            player[0].draw(screen)
-            player[1].draw(screen)
-        player_dict[winner_name][2].draw(screen, "black")
+        players[player_index].hand.edit_masks()
+        players[player_index].hand.adjust_position_based_on_mouse_pos()
+        for player in players:
+            player.hand.draw(screen)
+            player.collected.draw(screen)
+        winner.bet.draw(screen, "black")
 
     # draw all elements and update screen
     pygame.display.update()

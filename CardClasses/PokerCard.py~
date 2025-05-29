@@ -83,6 +83,7 @@ class PokerCard(pygame.sprite.Sprite):
             relative_mouse_pos = self.get_mouse_pos_relative_to_mask()
             center = self.rect.center
             sin_rotation = math.sin(math.radians(self.rotation))
+            print(sin_rotation)
             cos_rotation = math.cos(math.radians(self.rotation))
 
             approximate_original_location, approximate_float_position =\

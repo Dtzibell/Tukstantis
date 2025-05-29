@@ -16,8 +16,10 @@ class CollectedCards(pygame.sprite.LayeredUpdates):
             self.top_layer += 1
 
     def update(self, mouse1_state: bool, player: Player):
+        moved = False
         try:
             top_card = self.get_top_sprite()
-            top_card.move_to_hand(mouse1_state, player)
+            moved = top_card.move_to_hand(mouse1_state, player)
         except IndexError:
             pass
+        return moved

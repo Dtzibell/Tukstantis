@@ -11,7 +11,7 @@ class CenterCards(pygame.sprite.LayeredUpdates):
         
         card_width = center_cards[0].dimens[0]
         card_height = center_cards[0].dimens[1]
-        center = (640, 400) # might need to change in the future for scalable window
+        center = (640, 400)
         offset = -card_width - card_gap
         for n in range(len(center_cards)):
             card_back = PokerCard(card_width, card_height, path_to_card_back)

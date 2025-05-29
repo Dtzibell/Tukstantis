@@ -28,7 +28,7 @@ class ClientSocket(Socket):
         # receives the addresses from the server
         addresses, _ = self.socket.recvfrom(1024)
         addresses = self.convert_bytes_to_list(addresses)
-        self.assign_clients(addresses)
+        self.clients = addresses[:self.player_no] + addresses[self.player_no + 1:]
         self.socket.sendto(b"", (SERVER_IP, 8080))
         
         # receives final confirmation

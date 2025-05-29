@@ -29,7 +29,7 @@ class ServerSocket(Socket):
         # compute player number
         self.ips.append(client[0])
         self.ports.append(client[1])
-        player_number = self.convert_list_to_bytes([len(self.ips)-1])
+        player_number = self.convert_list_to_bytes([len(self.ips)])
 
         self.socket.sendto(player_number, client)
         self.socket.recvfrom(80)
