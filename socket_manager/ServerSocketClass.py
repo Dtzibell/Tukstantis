@@ -1,6 +1,7 @@
 from socket_manager.SocketClass import Socket
 import socket
-from copy import deepcopy
+import json
+
 class ServerSocket(Socket):
     
     def __init__(self, address_family: socket.AddressFamily, 
@@ -29,9 +30,9 @@ class ServerSocket(Socket):
         # compute player number
         self.ips.append(client[0])
         self.ports.append(client[1])
-        player_number = self.convert_list_to_bytes([len(self.ips)-1])
+        client_player_number = json.dumps(len(self.ips)-1).encode()
 
-        self.socket.sendto(player_number, client)
+        self.socket.sendto(client_player_number, client)
         self.socket.recvfrom(80)
         print(f"{client[0]}:{client[1]} connected.")
     
@@ -53,7 +54,7 @@ class ServerSocket(Socket):
         
         addresses = self.list_addresses()
         self.assign_clients(addresses)
-        addresses = self.convert_list_to_bytes(addresses)
+        addresses = json.dumps(addresses).encode()
         
         # send addresses to clients
         for index in range(1, len(self.ips)):

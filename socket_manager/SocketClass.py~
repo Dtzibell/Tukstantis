@@ -11,39 +11,44 @@ class Socket(socket.socket):
         self.ip: str = self.get_ip()
         self.af = address_family
         self.sock_type = socket_type
-
-    def convert_list_to_bytes(self, to_send, separators: list = ["/", "::", ":"], recursion_level = 0):
+    
+    @staticmethod
+    def convert_list_to_bytes[T: str | int | bytes | list[str | int | bytes]]\
+            (to_send: list[str | bytes | int | list[T]], separators: list =
+            ["/", "::", ":"], recursion_level: int = 0) -> bytes | str:
         """
-        converts a list to a string with predefined separators or nested lists.
+        converts a list to a string with predefined separators denoting nested lists.
         
         the separators list has to be the most specific at the top level -
         for example, :: has to be higher up than :
         """
         for index, item in enumerate(to_send):
             if isinstance(item, list):
-                to_send[index] = self.convert_list_to_bytes(item, separators[1:], recursion_level+1)
+                to_send[index] = Socket.convert_list_to_bytes(item, separators[1:], 
+                                                            recursion_level + 1)
             elif not isinstance(item, str):
                 to_send[index] = str(item)
-        to_send = separators[0].join(to_send)
-        # converts to bytes if at top recursion level
         if recursion_level == 0:
-            to_send = to_send.encode()
-        return to_send
+            # converts the list to bytes if at top recursion level
+            joined = separators[0].join(to_send).encode()
+        else:
+            joined = separators[0].join(to_send)
+        
+        return joined
     
-    def convert_bytes_to_list(self, received, separators: list = ["/", "::", ":"]):
+    @staticmethod
+    def convert_bytes_to_list(received: bytes, separators: list[str] = ["/", "::", ":"]) -> list[str | int | list[str | int]]:
         """
-        converts bytes to a list based ond predefined separators to denote nested lists.
+        decodes bytes to a list based ond predefined separators that denote nested lists.
         """
-        if type(received) == bytes:
-            received = received.decode()
-        received = received.split(separators[0])
-        for index in range(len(received)):
-            if received[index].isdigit():
-                received[index] = int(received[index])
-            elif separators[1] in received[index]:
-                received[index] = self.convert_bytes_to_list(received[index], separators[1:])
-        return received
-
+        decoded: str = received.decode()
+        split:list[str | int | list[str | int]] = decoded.split(separators[0])
+        for index in range(len(split)):
+            if split[index].isdigit():
+                split[index] = int(split[index])
+            elif separators[1] in split[index]:
+                split[index] = Socket.convert_bytes_to_list(split[index], separators[1:])
+        return split
 
     def get_ip(self) -> str:
         """
@@ -55,4 +60,14 @@ class Socket(socket.socket):
         IP = s.getsockname()[0]
         s.close()
         return IP
-
+    
+    def assign_clients(self, addresses):
+        """
+        put address list into a clients attribute.
+        """
+        # deepcopy because list is later modified
+       
+        self.clients = addresses[:self.player_no] + addresses[self.player_no + 1:]
+        for i in range(len(self.clients)):
+            self.clients[i] = tuple(self.clients[i])
+        print(f"Client list: {self.clients}")

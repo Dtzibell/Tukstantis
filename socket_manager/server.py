@@ -11,7 +11,7 @@ def run_server():
         sock = initiate_server()
     elif socket_purpose == "client":
         # SERVER_IP = input("Enter IP: ")
-        SERVER_IP = "192.168.178.162"
+        SERVER_IP = "134.2.132.164"
         sock = initiate_client(SERVER_IP)
 
     return sock, socket_purpose

@@ -1,6 +1,7 @@
 from ButtonText import Button
 from ButtonText import Bet
 from CardClasses.PlayerClass import Player
+import unittest
 
 def is_finished(players: list[Player]):
     """
@@ -8,13 +9,14 @@ def is_finished(players: list[Player]):
     """
     
     passed = 0
-    end_auction = 0
+    end_auction = False
 
     for player in players:
         if player.bet.value == 0:
             passed += 1
+
     if passed == 2:
-        end_auction = 1
+        end_auction = True
 
     return end_auction
 
@@ -23,34 +25,31 @@ def manage_auction(turn: int, player_index: int, raise_button: Button, pass_butt
     """
     manages the auction
     """
+    if players[player_index].bet.value == 0:
+        turn = (turn + 1) % 3
+        end_auction = False
+        return turn, end_auction
+
     # get how many passed, end auction if two
     end_auction = is_finished(players)
     if end_auction:
         return turn, end_auction
-
-    player_bet = players[player_index].bet
-        
+    
     # if own turn
-    if turn == player_index and players[player_index].bet.value != 0:
+    if turn == player_index:
         # if raising
         if raise_button.pressed:
             bets_values = [players[player_index].bet.value for player_index in range(3)]
-            player_bet.value = max(bets_values) + 10
-            print(player_bet.value)
-            turn += 1 # INTEGERS ARE IMMUTABLE!
-            raise_button.pressed = False
+            players[player_index].bet.value = max(bets_values) + 10
+            players[player_index].bet.text = str(players[player_index].bet.value)
+            print(bets_values)
+            turn = (turn + 1) % 3
         
         #if passing
         elif pass_button.pressed:
-            player_bet.value = 0
-            turn += 1
-            pass_button.pressed = False
+            players[player_index].bet.value = 0
+            players[player_index].bet.text = str(players[player_index].bet.value)
+            turn = (turn + 1) % 3
 
     # if already passed, skips the turn
-    elif player_bet.value == 0:
-        turn += 1
-    
-    if turn == 3:
-        turn = 0
-    
-    return player_bet, turn, end_auction
+    return turn, end_auction

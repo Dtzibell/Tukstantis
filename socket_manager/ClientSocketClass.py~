@@ -1,5 +1,7 @@
 import socket
 from socket_manager.SocketClass import Socket
+import json
+
 class ClientSocket(Socket):
     def __init__(self, address_family: socket.AddressFamily, 
                  socket_type: socket.SocketKind):
@@ -15,7 +17,7 @@ class ClientSocket(Socket):
         # receives the player number from the server
         self.socket.sendto(b"Connection", (SERVER_IP, 8080))
         player_number, _ = self.socket.recvfrom(1024)
-        self.player_no = self.convert_bytes_to_list(player_number)[0]
+        self.player_no = json.loads(player_number)
         self.port = self.socket.getsockname()[1]
         
         # since socket sends to local network, its IP is set to 0.0.0.0
@@ -27,8 +29,8 @@ class ClientSocket(Socket):
         
         # receives the addresses from the server
         addresses, _ = self.socket.recvfrom(1024)
-        addresses = self.convert_bytes_to_list(addresses)
-        self.clients = addresses[:self.player_no] + addresses[self.player_no + 1:]
+        addresses = json.loads(addresses)
+        self.assign_clients(addresses)
         self.socket.sendto(b"", (SERVER_IP, 8080))
         
         # receives final confirmation

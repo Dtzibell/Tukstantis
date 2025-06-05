@@ -1,6 +1,7 @@
 from socket_manager.SocketClass import Socket
 import socket
-from copy import deepcopy
+import json
+
 class ServerSocket(Socket):
     
     def __init__(self, address_family: socket.AddressFamily, 
@@ -29,7 +30,7 @@ class ServerSocket(Socket):
         # compute player number
         self.ips.append(client[0])
         self.ports.append(client[1])
-        player_number = self.convert_list_to_bytes([len(self.ips)])
+        client_player_number = json.dumps(len(self.ips)-1).encode()
 
         self.socket.sendto(player_number, client)
         self.socket.recvfrom(80)
