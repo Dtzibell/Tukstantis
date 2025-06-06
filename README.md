@@ -1,22 +1,19 @@
-Tukstantis
-=====
-
-Goal
----
+# Tukstantis
+## Flow of the game
+### Goal
 The game can only be played by 3 players. The goal is to collect 1000 points faster
 than your opponents.
 
 The goal is achieved by collecting poker cards that each have an assigned value:
 - The A is 11 points
-- 10 is 10 points
+- The 10 is 10 points
 - The K is 4 points
 - The Q is 3 points
 - The J is 2 points
 - The 9 is 0 points
 This makes a total of 24 cards.
 
-Course of the game
----
+### Course of the game
 The cards are collected in rounds. Each round, the players are handed 7 cards, and 3
 leftover cards are placed in the center of the table. The round begins with a bidding
 war, where each player bids how many points they can collect within the round.
@@ -36,8 +33,7 @@ reaced the amount of points they bid on, the bid amount is added to their point
 account. If they do not, it is subtracted. Other players receive the amount
 of points they collected, rounded to the nearest 10.
 
-Royal couples
----
+### Royal couples
 
 Considering the course of the game just described, the largest amount of points
 that could be collected would be 120: 11*4 + 10*4 + 4*4 + 3*4 + 2*4 = 120. That 
@@ -57,29 +53,25 @@ When a royal couple is called, all the cards of the same type become trump cards
 beat any card that is not of the same type (the trump card hierarchy remains the same). So 
 think carefully about calling your royal couples!
 
-Gambling element
----
+### Gambling element
 
 Gamblig addicts listen up - bids can be made without looking at your cards. This
 way, you can earn twice the points that you bid if you manage to collect them. You opponents will
 also gain double the points that they collect, and if you do not manage to collect the points
 that you bid, you lose double the points.
 
-End of the game
----
+### End of the game
 The game finalizes once one player climbs over 1000 points. However, if a player reaches 900
 points, they have three rounds to win a bid. If they fail to do so, 100 points are deducted
 from their result. Additionally, players who reach 900 points do not gain any points from
 rounds during which other players won the bid.
 
-
-
 Now, feel free to try the game out yourself! There might be rules that I have missed, please
 point it out.
 
-Assets used in this game:
-font 0xprotonerdfontmono
-cards' art from: https://code.google.com/archive/p/vector-playing-cards/
-cards' back art from: https://www.vecteezy.com/vector-art/102977-playing-card-back-free-vector
+## Assets used in this game:
+- font 0xprotonerdfontmono
+- cards' art from: https://code.google.com/archive/p/vector-playing-cards/
+- cards' back art from: https://www.vecteezy.com/vector-art/102977-playing-card-back-free-vector
 
 
