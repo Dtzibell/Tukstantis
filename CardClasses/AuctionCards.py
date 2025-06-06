@@ -8,7 +8,7 @@ class AuctionCards(pygame.sprite.LayeredUpdates):
         """
 
         super().__init__()
-        self.center: tuple[int,int] = (640, 400)
+        self.center: tuple[int,int] = (640, 250)
         self.gap: int = 50
         self.cards: dict[str, PokerCard] = dict()
 

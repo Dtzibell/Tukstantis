@@ -34,8 +34,8 @@ class PlayerHand(pygame.sprite.LayeredUpdates):
             
             # rotate the card by rotation and place at P(center_x, center_y)
             card.rotate_and_move(rotation, (center_x,center_y))
-            card.location = card.rect.center
             card.rotation = rotation
+            card.location = (center_x, center_y)
             rotation -= rotation_step
             
             # add card to group
@@ -45,7 +45,7 @@ class PlayerHand(pygame.sprite.LayeredUpdates):
     def add_(self, card: PokerCard | None) -> None:
 
         try:
-            if card != PokerCard:
+            if type(card) != PokerCard:
                 raise AttributeError
             self.empty()
             self.cards[card.name] = card
@@ -75,7 +75,7 @@ class PlayerHand(pygame.sprite.LayeredUpdates):
                 return card.name, card
         return None, None
     
-    def remove_card(self, card_name: str) -> PokerCard:
+    def remove_card(self, card_name: str) -> PokerCard | None:
         card: PokerCard = self.cards.pop(card_name)
         self.empty()
         self.add_cards(self.cards.copy())

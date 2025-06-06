@@ -13,6 +13,8 @@ class CollectedHand(pygame.sprite.LayeredUpdates):
         
         try:
             card.rotate_and_move(self.rotation, self.center)
+            card.rotation = self.rotation
+            card.location = self.center
             self.add(card)
             self.cards[card.name] = card
             self.change_layer(card, self.top_layer)
@@ -32,5 +34,5 @@ class CollectedHand(pygame.sprite.LayeredUpdates):
 
     def remove_card(self, card_name: str) -> PokerCard:
         card = self.cards.pop(card_name)
-        card.remove(card)
+        self.remove(card)
         return card

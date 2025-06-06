@@ -59,13 +59,13 @@ def generate_initial_state(all_cards: dict[str, PokerCard], player_no: int):
         player_hands[i].add_cards(player_cards[i])
     player_hands = player_hands[player_no:] + player_hands[:player_no]
 
-    collected_player0 = CollectedHand((350, 650), 0)
+    collected_player0 = CollectedHand((325, 625), 0)
     collected_player1 = CollectedHand((150, 100), -90)
     collected_player2 = CollectedHand((1080, 100), 90)
     collected_cards = [collected_player0, collected_player1, collected_player2] 
     collected_cards = collected_cards[player_no:] + collected_cards[:player_no]
     
-    bet1 = Bet((640, 550), 0)
+    bet1 = Bet((640, 470), 0)
     bet2 = Bet((250, 400), -90)
     bet3 = Bet((1030, 400), 90)
     player_bets = [bet1, bet2, bet3]

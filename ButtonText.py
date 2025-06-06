@@ -42,35 +42,45 @@ class Button():
         screen.blit(self.surface, self.rect)
         
         #creates and draws text over the Buttons Surface
-        text: Text = Text(self.center, self.text, 0)
+        text: Text = Text(self.center, self.text, 0, 30)
         text.draw(screen, "white")
 
-        # text_font = pygame.font.SysFont("0xprotonerdfontmono", 30)
-        # text = text_font.render(self.text, True, "white")
-        # text_rect = text.get_rect(center = self.center)
-        # screen.blit(text, text_rect)
-
 class Text():
-    def __init__(self, center_coords: IntFloatTuple, text: str, rotation: int) -> None:
+    def __init__(self, center_coords: IntFloatTuple, text: str, rotation: int, size: int) -> None:
         self.center: IntFloatTuple = center_coords
         self.text: str = text
         self.rotation: int = rotation
+        self.size = size
     
-    def draw(self, screen: pygame.Surface, color: str):
-        text_font = pygame.font.SysFont("0xprotonerdfontmono", 30)
+    def draw(self, screen: pygame.Surface, color: str) -> None:
+        text_font = pygame.font.SysFont("Arial", self.size)
         text = text_font.render(self.text, True, color)
         text = pygame.transform.rotate(text, self.rotation)
         text_rect = text.get_rect(center = self.center)
         screen.blit(text, text_rect)
+    
+    def draw_newlines(self, screen: pygame.Surface, color: str) -> None:
+        text_font = pygame.font.SysFont("0xprotonerdfontmono", self.size)
+        lines = self.text.split('\n')
+        line_height = text_font.get_height()
+        total_height = line_height * len(lines)
+        start_y = self.center[1] - total_height // 2 + line_height // 2
+
+        for i, line in enumerate(lines):
+            rendered_line = text_font.render(line, True, color)
+            rendered_line = pygame.transform.rotate(rendered_line, self.rotation)
+            text_rect = rendered_line.get_rect(center=(self.center[0], start_y + i * line_height))
+            screen.blit(rendered_line, text_rect)
 
 class Bet(Text):
-    def __init__(self, center_coords: IntFloatTuple, rotation: int):
+    def __init__(self, center_coords: IntFloatTuple, rotation: int) -> None:
         self.center = center_coords
         self.rotation = rotation
         self.value = 100
         self.text = str(self.value)
+        self.size = 30
 
-    def set_value(self, value: int):
+    def set_value(self, value: int) -> None:
 
         self.value = value
         self.text = str(value)

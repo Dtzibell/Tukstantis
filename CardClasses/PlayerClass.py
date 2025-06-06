@@ -10,3 +10,4 @@ class Player:
         self.hand = hand
         self.collected = collected_cards
         self.bet = bet
+        self.value = 0
