@@ -34,6 +34,7 @@ account. If they do not, it is subtracted. Other players receive the amount
 of points they collected, rounded to the nearest 10.
 
 ### Royal couples
+
 Considering the course of the game just described, the largest amount of points
 that could be collected would be 120: 11*4 + 10*4 + 4*4 + 3*4 + 2*4 = 120. That 
 would make the bidding war starting at 100 boring. The catch is: a pair of a king
@@ -43,7 +44,6 @@ on the board:
 - Clubs - 60
 - Diamonds - 80
 - Hearts - 100
-
 If one half of the royal couple is placed on the board as the base card 
 (further - called), the sum of all collected cards + the value of the royal couple
 (or couples, if you are lucky) determine how many points you collected. Players
@@ -54,6 +54,7 @@ beat any card that is not of the same type (the trump card hierarchy remains the
 think carefully about calling your royal couples!
 
 ### Gambling element
+
 Gamblig addicts listen up - bids can be made without looking at your cards. This
 way, you can earn twice the points that you bid if you manage to collect them. You opponents will
 also gain double the points that they collect, and if you do not manage to collect the points
