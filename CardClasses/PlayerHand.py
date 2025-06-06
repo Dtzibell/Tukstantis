@@ -12,7 +12,6 @@ class PlayerHand(pygame.sprite.LayeredUpdates):
     def add_cards(self, card_list: dict[str, PokerCard]) -> None:
         """
         Adds the cards in a fan-shaped pattern to the hand
-        returns None
         """
         try:
             # to widen the fan, change the multiplicative of amplitude
@@ -21,7 +20,7 @@ class PlayerHand(pygame.sprite.LayeredUpdates):
         except ZeroDivisionError:
             rotation_amplitude, rotation_step = 0, 0
         # rotation is set to rotation of the first card from the left
-        rotation:float = self.angle + rotation_amplitude / 2
+        rotation: float = self.angle + rotation_amplitude / 2
         self.radius: int | float = 200
         self.cards.clear()
 
@@ -43,6 +42,9 @@ class PlayerHand(pygame.sprite.LayeredUpdates):
             self.cards[card.name] = card
 
     def add_(self, card: PokerCard | None) -> None:
+        """
+        Adds a card to the hand by card object.
+        """
 
         try:
             if type(card) != PokerCard:
@@ -54,6 +56,10 @@ class PlayerHand(pygame.sprite.LayeredUpdates):
             pass
         
     def edit_masks(self) -> None: 
+        """
+        Iterates over all PokerCards in hand and erases the mask of the cards
+        laying below another card.
+        """
         cards = self.sprites()
         for index, card in enumerate(cards):
             for other_card in cards[index+1:]:
@@ -67,20 +73,38 @@ class PlayerHand(pygame.sprite.LayeredUpdates):
             card.adjust_position_based_on_mouse_pos()
             
     def remove_on_click(self, mouse1_state: bool) -> tuple[str, list[PokerCard]] | tuple[None, None]:
+        """
+        Removes a card based on the players interaction.
+        returns (None, None) if no card was clicked.
+        """
         for card in self.sprites():
-            if card.is_clicked(mouse1_state):
+            if card.is_clicked(mouse1_state) and card.mobile:
                 del self.cards[card.name]
                 self.empty()
                 self.add_cards(self.cards.copy())
                 return card.name, card
         return None, None
     
-    def remove_card(self, card_name: str) -> PokerCard | None:
+    def remove_card(self, card_name: str) -> PokerCard:
+        """
+        Removes a card by name.
+        """
         card: PokerCard = self.cards.pop(card_name)
         self.empty()
         self.add_cards(self.cards.copy())
         return card
-
+    
+    def immobilize_invalid_cards(self, base_card: PokerCard):
+        different_type_cards = []
+        card_hand = self.cards.values()
+        for card in card_hand:
+            if card.card_type != base_card.card_type:
+                different_type_cards.append(card)
+        if len(different_type_cards) == len(card_hand):
+            pass
+        else:
+            for card in different_type_cards:
+                card.mobile = False
 
     def flip(self):
         for card in self.sprites():

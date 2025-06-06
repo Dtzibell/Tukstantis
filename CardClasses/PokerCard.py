@@ -146,7 +146,7 @@ class PokerCard(pygame.sprite.Sprite):
     def is_clicked(self, mouse1_state):
         try:
             mouse_pos = self.get_mouse_pos_relative_to_mask()
-            if self.mask.get_at(mouse_pos) and mouse1_state:
+            if self.mask.get_at(mouse_pos) and mouse1_state and self.mobile:
                 self.kill()
                 return True
             else: return False

@@ -81,6 +81,26 @@ while True:
     Player 1: {players[1].value}
     Player 2: {players[2].value}"""
     score_text.draw_newlines(screen, "black")
+    
+    if phase == "regeneration":
+        if socket_purpose == "host":
+            # seed = random.randint(0, 2**200)
+            seed = 1
+            for client in sock.clients:
+                sock.socket.sendto(seed.to_bytes(25), (client[0], client[1]))
+            random.seed(seed)
+        elif socket_purpose == "client":
+            msg, sender = sock.socket.recvfrom(1024)
+            seed: int = int.from_bytes(msg)
+            random.seed(seed)
+        all_cards: dict[str, PokerCard] = initialize_cards(path_to_card_pngs, card_width, card_height)
+        players, auction_hand = generate_initial_state(all_cards, player_index)
+        player_obj: Player = players[player_index]
+        player_hand: PlayerHand = player_obj.hand
+        player_collected_cards: CollectedHand = player_obj.collected
+        player_bet: Bet = player_obj.bet
+        turn: int = random.randint(0,2)
+        phase = "auction"
 
     if phase == "auction":
         # draw all cards
@@ -237,6 +257,8 @@ while True:
 
         if turn == player_index:
             card_name, card = player_obj.hand.remove_on_click(mouse1_state)
+            if turn == round_leader:
+                base_card = card
             turn = board_center.add_(card, turn)
             if len(board_center.cards) == 3:
                 end_of_triplet = True
@@ -249,15 +271,18 @@ while True:
             round_info = json.loads(round_info_bytes)
             card_name = round_info[0]
             if card_name != None:
-                card = players[round_info[1]].hand.remove_card(card_name)
+                card = players[turn].hand.remove_card(card_name)
                 turn = board_center.add_(card, turn)
+                if round_info[1] == round_leader:
+                    base_card = card
+                    for i in range(len(players)):
+                        players[i].hand.immobilize_invalid_cards(base_card)
             if len(board_center.cards) == 3:
                 end_of_triplet = True
 
         if end_of_triplet:
             end_of_triplet = False
             current_board: list[PokerCard] = board_center.sprites()
-            base_card = current_board[0]
             won_cards = None
             for card in current_board[1:]:
                 if (card.card_type == base_card.card_type and 
@@ -277,6 +302,7 @@ while True:
                 for card in won_cards:
                     card.flip()
                     winner_collected.add_(card)
+            player_hand.set_movable()
             if len(players[round_leader].hand.cards) == 0:
                 for player in players:
                     score = 0
@@ -290,9 +316,8 @@ while True:
                     else:
                         player.value = round(score, -1)
                     print(players.index(player), player.value)
-                phase = "empty"
-                print("empty phase")
-                
+                phase = "regeneration"
+                print("round is finished")
     # draw all elements and update screen
     pygame.display.update()
     clock.tick(60)
