@@ -5,22 +5,22 @@ import json
 class ServerSocket(Socket):
     
     def __init__(self, address_family: socket.AddressFamily, 
-                 socket_type: socket.SocketKind):
+                 socket_type: socket.SocketKind) -> None:
         # creates socket, sets opts and gets ip
         super().__init__(address_family, socket_type)
 
         # port has to be allowed by firewall (linux)
-        self.port = 8080
+        self.port: int = 8080
         self.socket.bind((self.ip, self.port))
         print(f"hosting at {self.ip}, listening to {self.port}. \nInitiating...")
         
         # other attributes
-        self.player_no = 0
-        self.ips = [self.ip]
-        self.ports = [self.port]
-        self.initiated = False
+        self.player_no: int = 0
+        self.ips: list[str] = [self.ip]
+        self.ports: list[int] = [self.port]
+        self.initiated: bool = False
     
-    def connect_player(self):
+    def connect_player(self) -> None:
         """
         Assign a player number to a connecting client.
         """
@@ -30,21 +30,21 @@ class ServerSocket(Socket):
         # compute player number
         self.ips.append(client[0])
         self.ports.append(client[1])
-        client_player_number = json.dumps(len(self.ips)-1).encode()
+        client_player_number: bytes = json.dumps(len(self.ips)-1).encode()
 
         self.socket.sendto(client_player_number, client)
         self.socket.recvfrom(80)
         print(f"{client[0]}:{client[1]} connected.")
     
-    def list_addresses(self):
+    def list_addresses(self) -> list[list[str | int]]:
         
-        addresses = []
+        addresses: list[list[str | int]] = []
         # group addresses 
         for i in range(len(self.ips)):
             addresses.append([self.ips[i], self.ports[i]])
         return addresses
 
-    def confirm_server_creation(self):
+    def confirm_server_creation(self) -> None:
         """
         Confirms that all players are connected. If the message fails to be received,
         something went wrong.
@@ -77,7 +77,7 @@ def initiate_server() -> ServerSocket:
     returns the server socket
     """
     # create server socket
-    sock = ServerSocket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock: ServerSocket = ServerSocket(socket.AF_INET, socket.SOCK_DGRAM)
     
     # enter feedback loop
     while not sock.initiated:

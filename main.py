@@ -57,8 +57,8 @@ pass_button: Button = Button((1100, 750), (200, 50), "Pass")
 show_button: Button = Button((640,750), (200, 50), "Show cards")
 show_show_button: bool = True
 turn: int = random.randint(0,2)
-turn_text: Text = Text((225, 788), f"Turn: {turn}", 0, 20)
-score_text: Text = Text((75, 750), f"Score: \nPlayer 0: {players[0].value} \nPlayer 1: {players[1].value} \nPlayer 2: {players[2].value}", 0, 20)
+turn_text: Text = Text((225, 788), "", 0, 20)
+score_text: Text = Text((75, 750), "", 0, 20)
 end_auction: bool = False
 
 while True:
@@ -77,10 +77,10 @@ while True:
     turn_text.text = f"Turn: {turn}"
     turn_text.draw(screen, "black")
     score_text.text = f"""Score:
-    Player 0: {players[0].value}
-    Player 1: {players[1].value}
-    Player 2: {players[2].value}"""
-    score_text.draw_newlines(screen, "black")
+      Player 0: {players[0].value}
+      Player 1: {players[1].value}
+      Player 2: {players[2].value}"""
+    score_text.draw(screen, "black")
     
     if phase == "regeneration":
         if socket_purpose == "host":
