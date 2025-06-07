@@ -7,7 +7,6 @@ from CardClasses.CollectedHand import CollectedHand
 from CardClasses.PlayerHand import PlayerHand
 from CardClasses.PlayerClass import Player
 from CardClasses.PokerCard import PokerCard
-from CardClasses.AuctionCards import AuctionCards
 from game_initiation import initialize_cards, generate_initial_state
 from ButtonText import Bet, Button, Text
 from auction_manager import manage_auction
@@ -62,17 +61,17 @@ score_text: Text = Text((75, 750), "", 0, 20)
 end_auction: bool = False
 
 while True:
-    # handle application closing
+    # event management
     if pygame.event.peek(pygame.QUIT):
         pygame.quit()
         exit()
-    
-    # handle the state of mouse1
     mouse1_state: bool = pygame.event.peek(pygame.MOUSEBUTTONDOWN)
     
+    # screen reset
     pygame.event.clear()
     screen.fill("grey")
-
+    
+    # turn and score information
     index_text.draw(screen, "black")
     turn_text.text = f"Turn: {turn}"
     turn_text.draw(screen, "black")
@@ -82,6 +81,7 @@ while True:
       Player 2: {players[2].value}"""
     score_text.draw(screen, "black")
     
+    # this kicks in when the round ends
     if phase == "regeneration":
         if socket_purpose == "host":
             # seed = random.randint(0, 2**200)
@@ -103,26 +103,21 @@ while True:
         phase = "auction"
 
     if phase == "auction":
-        # draw all cards
         player_hand.edit_masks()
         player_hand.adjust_position_based_on_mouse_pos()
         for player in players:
             player.hand.draw(screen)
         auction_hand.draw(screen)
-
-        # draw show button
+        for player in players: 
+            player.bet.draw(screen, "black")
         if show_show_button:
             show_button.draw(screen, mouse1_state)
             if show_button.pressed:
-                show_show_button: bool = False
+                show_show_button = False
                 show_button.pressed = False
                 player_hand.flip()
                 player_hand.set_movable()
 
-        # draw bets
-        for player in players: 
-            player.bet.draw(screen, "black")
-        
         # own turn
         if turn == player_index:
             # update game state
@@ -134,17 +129,14 @@ while True:
             json_dump: bytes = json.dumps(to_transfer).encode()
             for client in sock.clients:
                 sock.socket.sendto(json_dump, client)
+       
         # other's turn
         else:
-            try:
-                auction_info_bytes, server = sock.socket.recvfrom(1024)
-                auction_info = json.loads(auction_info_bytes)
-                players[auction_info[0]].bet.set_value(auction_info[1])
-                turn = auction_info[2]
-                end_auction = auction_info[3]
-            except IndexError:
-                print("packet lost")
-                pass
+            auction_info_bytes, server = sock.socket.recvfrom(1024)
+            auction_info = json.loads(auction_info_bytes)
+            players[auction_info[0]].bet.set_value(auction_info[1])
+            turn = auction_info[2]
+            end_auction = auction_info[3]
 
     
     # transition phase
@@ -158,7 +150,6 @@ while True:
         winner_index: int = turn
         winner_hand: PlayerHand = winner.hand
         # winner_cards is a list of all cards in the hand
-        winner_cards: dict[str,PokerCard] = winner_hand.cards
         winner_collected: CollectedHand = winner.collected
         winner_bet: Bet = winner.bet
         
@@ -169,8 +160,8 @@ while True:
             # places center_cards into self hand
             auction_hand.empty()
             winner_hand.empty()
-            winner_cards.update(auction_cards)
-            winner_hand.add_cards(winner_cards.copy())
+            winner_hand.cards.update(auction_cards) # merges 2 dicts
+            winner_hand.add_cards(winner_hand.cards.copy())
             if show_show_button:
                 winner_hand.flip()
             else:
@@ -186,8 +177,8 @@ while True:
             auction_cards = auction_hand.cards
             auction_hand.empty()
             winner_hand.empty()
-            winner_cards.update(auction_cards)
-            winner_hand.add_cards(winner_cards.copy())
+            winner_hand.cards.update(auction_cards)
+            winner_hand.add_cards(winner_hand.cards.copy())
             # if show button has not been pressed, reveals the cards
             if show_show_button:
                 player_hand.flip()

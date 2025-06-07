@@ -11,6 +11,7 @@ The goal is achieved by collecting poker cards that each have an assigned value:
 - The Q is 3 points
 - The J is 2 points
 - The 9 is 0 points
+
 This makes a total of 24 cards.
 
 ### Course of the game
