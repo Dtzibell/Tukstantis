@@ -10,8 +10,7 @@ def run_server():
     if socket_purpose == "host":
         sock = initiate_server()
     elif socket_purpose == "client":
-        # SERVER_IP = input("Enter IP: ")
-        SERVER_IP = "192.168.178.162"
+        SERVER_IP = input("Enter IP: ")
         sock = initiate_client(SERVER_IP)
 
     return sock, socket_purpose
