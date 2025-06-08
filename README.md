@@ -1,3 +1,8 @@
+# SHELVED
+This project was shelved. For complete functionality, a complete network refactor 
+is required. Additionally, the royal couples have not been implemented yet. 
+
+
 # Tukstantis
 ## Flow of the game
 ### Goal

@@ -7,7 +7,7 @@ from CardClasses.CollectedHand import CollectedHand
 from CardClasses.PlayerHand import PlayerHand
 from CardClasses.PlayerClass import Player
 from CardClasses.PokerCard import PokerCard
-from game_initiation import initialize_cards, generate_initial_state
+from game_initiation import initialize_cards, generate_initial_state, regenerate_initial_state
 from ButtonText import Bet, Button, Text
 from auction_manager import manage_auction
 from socket_manager.server import run_server
@@ -94,13 +94,17 @@ while True:
             seed: int = int.from_bytes(msg)
             random.seed(seed)
         all_cards: dict[str, PokerCard] = initialize_cards(path_to_card_pngs, card_width, card_height)
-        players, auction_hand = generate_initial_state(all_cards, player_index)
+        players, auction_hand = regenerate_initial_state(all_cards, players, auction_hand)
         player_obj: Player = players[player_index]
         player_hand: PlayerHand = player_obj.hand
         player_collected_cards: CollectedHand = player_obj.collected
         player_bet: Bet = player_obj.bet
         turn: int = random.randint(0,2)
         phase = "auction"
+        show_show_button = True
+        raise_button.pressed = False
+        pass_button.pressed = False
+        show_button.pressed = False
 
     if phase == "auction":
         player_hand.edit_masks()
@@ -196,6 +200,7 @@ while True:
             confirm_button.draw(screen, mouse1_state)
             raise_button.draw(screen, mouse1_state)
             if confirm_button.pressed and len(player_hand) == 7:
+                confirm_button.pressed = False
                 for card in winner_collected.cards.values():
                     card.flip()
                 phase = "round"
@@ -205,6 +210,7 @@ while True:
             elif confirm_button.pressed:
                 print("You have to have 7 cards")
             if raise_button.pressed:
+                raise_button.pressed = False
                 winner_bet.set_value(winner_bet.value + 10)
             card_hand_name, card_hand = winner_hand.remove_on_click(mouse1_state)
             card_collected_name, card_collected = winner_collected.remove_on_click(mouse1_state)

@@ -50,6 +50,8 @@ def generate_initial_state(all_cards: dict[str, PokerCard], player_no: int):
     auction_cards.add_(leftover_cards)
 
     player_cards = [cards_player0, cards_player1, cards_player2]
+    # this ensures that the hand object at the bottom of the screen receives
+    # the player_index cards.
     player_cards = player_cards[player_no:] + player_cards[:player_no]
     hand0 = PlayerHand((640, 900), 0)
     hand1 = PlayerHand((-100, 400), -90)
@@ -57,23 +59,47 @@ def generate_initial_state(all_cards: dict[str, PokerCard], player_no: int):
     player_hands: list[PlayerHand] = [hand0, hand1, hand2]
     for i in range(len(player_hands)):
         player_hands[i].add_cards(player_cards[i])
+    # this ensures that the players cards are drawn at the bottom of the screen
     player_hands = player_hands[player_no:] + player_hands[:player_no]
 
     collected_player0 = CollectedHand((325, 625), 0)
     collected_player1 = CollectedHand((150, 100), -90)
     collected_player2 = CollectedHand((1080, 100), 90)
-    collected_cards = [collected_player0, collected_player1, collected_player2] 
+    collected_cards = [collected_player0, collected_player1, collected_player2]
+    # cards drawn at the bottom of the screen
     collected_cards = collected_cards[player_no:] + collected_cards[:player_no]
     
     bet1 = Bet((640, 470), 0)
     bet2 = Bet((250, 400), -90)
     bet3 = Bet((1030, 400), 90)
     player_bets = [bet1, bet2, bet3]
+    # drawn at the bottom of the screen
     player_bets = player_bets[player_no:] + player_bets[:player_no]
 
     player_center = Player(player_hands[0], collected_cards[0], player_bets[0])
     player_left = Player(player_hands[1], collected_cards[1], player_bets[1])
     player_right = Player(player_hands[2], collected_cards[2], player_bets[2])
     players = [player_center, player_left, player_right]
+    # this ensures that the code can access the player object by the player index
     players = players[player_no:] + players[:player_no]
     return players, auction_cards
+
+def regenerate_initial_state(all_cards: dict[str, PokerCard], players: list[Player]):
+    """
+    This func can definitely be further optimized. Do I need all the extra objects?
+    """
+
+    cards_player0, leftover_cards = generate_player_cards(all_cards)
+    cards_player1, leftover_cards = generate_player_cards(leftover_cards)
+    cards_player2, leftover_cards = generate_player_cards(leftover_cards)
+    auction_hand = AuctionCards()
+    auction_hand.add_(leftover_cards)
+    player_cards = [cards_player0, cards_player1, cards_player2]
+    
+    for i, player in enumerate(players):
+        player.hand.add_cards(player_cards[i])
+        for card_name in player.collected.cards.copy().keys():
+            player.collected.remove_card(card_name)
+        player.bet.set_value(100)
+
+    return players, auction_hand

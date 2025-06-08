@@ -41,7 +41,6 @@ def manage_auction(turn: int, player_index: int, raise_button: Button, pass_butt
         if raise_button.pressed:
             bets_values = [players[player_index].bet.value for player_index in range(3)]
             players[player_index].bet.set_value(max(bets_values) + 10) 
-            print(bets_values)
             turn = (turn + 1) % 3
         
         #if passing
